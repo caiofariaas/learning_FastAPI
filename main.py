@@ -13,8 +13,7 @@ db: List[Car] = [
         owner='Caio Farias',
         model= carModel.civic,
         color= carColor.preto
-        
-        )
+    )
 ]
 
 @app.get('/')
