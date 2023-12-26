@@ -15,6 +15,7 @@ Base = declarative_base()
 # Modelo Pydantic para criar um usuário
 
 class UserCreate(BaseModel):
+    id: Optional[int]
     username: str
     email: str
     full_name: Optional[str]
@@ -22,6 +23,7 @@ class UserCreate(BaseModel):
 # Modelo Pydantic para criar um item
 
 class ItemCreate(BaseModel):
+    id: Optional[int]
     name: str
     description: Optional[str]
     price: float
@@ -57,12 +59,8 @@ class Item(Base):
 # Modelo SQLAlchemy para a tabela 'users'
 
 class User(Base):
-   
-# Define o nome da tabela no banco
-    
     __tablename__ = 'users'
    
-# Colunas
    
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)

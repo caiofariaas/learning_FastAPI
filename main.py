@@ -1,6 +1,7 @@
 # Importações necessárias do FastAPI, SQLAlchemy e modelos definidos
 
 from fastapi import FastAPI, Depends, HTTPException
+from typing import List
 from sqlalchemy.orm import Session
 from models import Base, UserCreate, ItemCreate, User, Item
 from database import engine, SessionLocal
@@ -16,11 +17,20 @@ Base.metadata.create_all(bind=engine)
 # Função para obter a sessão do banco de dados
 
 def get_db():
-    db = SessionLocal()
+    
+# Cria uma instância da sessão do banco de dados usando SessionLocal()
+   
+    db = SessionLocal()  
     try:
-        yield db
+        
+# Retorna a sessão para o chamador da função como um gerador
+
+        yield db  
     finally:
-        db.close()
+        
+# Fecha a sessão do banco de dados no final do bloco `try` ou após a conclusão do gerador
+
+        db.close()  
 
 # Definição de rotas da API
 
@@ -56,16 +66,34 @@ def create_item(item: ItemCreate, db: Session = Depends(get_db)):
     
     db_item = Item(**item.dict())
     
-    # Adiciona o item ao banco de dados
-    
     db.add(db_item)
-    
-    # Confirma as alterações no banco de dados
-    
     db.commit()
-    
-    # Atualiza a instância do item no banco de dados
-    
-    db.refresh(db_item)
-        
+    db.refresh(db_item) 
     return db_item
+
+# Método GET para todos os usuários
+# O 'Session' refere-se a sessão do banco de dados
+# 'Depends' gerencia dependencias em rotas, usado para obter uma intancia de sessão de banco
+# O código dentro da função de dependência (get_db) é executado antes da execução da função da rota.
+# A instância criada pela função de dependência é injetada como argumento na função da rota.
+
+@app.get("/api/users", response_model=List[UserCreate])
+def get_all_users(db: Session = Depends(get_db)):
+    users = db.query(User).all()
+    return users
+
+@app.put('/api/uptade_user/{user_id}', response_model=UserCreate)
+def update_user(user_id: int, user_update: UserCreate, db: Session = Depends(get_db)):
+    
+    db_user = db.query(User).filter(User.id == user_id).first()
+    
+    if not db_user:
+        raise HTTPException(status_code=404, detail='User not found')
+    
+    for key, value, in user_update.dict().items():
+        setattr(db_user, key, value)
+        
+    db.commit()
+    db.refresh(db_user)
+    
+    return db_user
