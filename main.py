@@ -97,3 +97,23 @@ def update_user(user_id: int, user_update: UserCreate, db: Session = Depends(get
     db.refresh(db_user)
     
     return db_user
+
+@app.delete('/api/delete_user/{user_id}')
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if db_user:
+        db.delete(db_user)
+        db.commit()
+        return {"message": f"User with ID {user_id} deleted", "Deleted_user": db_user}
+    else:
+        raise HTTPException(status_code=404, detail=f'User with ID {user_id} not found')
+    
+    
+# 'query' é usado para iniciar uma consulta ao banco, por exemplo
+# db.query(User)
+# no banco de dados, consulte na tabela "User"
+# Depois chamamos o filter para passar condições de filtro aos resultados da consulta.
+# ele permite restringir apenas aos ragistros que atendam a determinadas condições
+# db.query(User).filter(User.id == user_id)
+# aqui ele filtaria os registros na tabela 'User' onde a coluna 'id' é igual ao valor de 'user_id'
+# o .first é usado para obter o primeiro resultado da consulta ou 'None'
